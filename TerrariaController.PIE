@@ -16,6 +16,7 @@
  *  fakeAnalogMultiplier - Multiplied by the analog signal to set sensitivity.      
  *  aimCenterX - X Center for the cursor in aim mode. Default is center screen.
  *  aimCenterY - Y Center for the cursor in aim mode. Default is center screen.
+ *  leftStickAim - Point in movement direction in aim mode when not using right stick
  *  invMiniMap - True if you use the mini map. Affects the inventory cursor 
  *
  *  Controls
@@ -28,13 +29,14 @@ if (Starting) {
    var.cursorCenterDistance=screen.Height/5;   
    var.rightDeadZone=0.1
    var.leftDeadZone=0.2
-   var.mouseMoveSpeed = 20;
+   var.mouseMoveSpeed = 50;
    var.fakeAnalog=true;
    var.fakeAnalogExponential=true;
    var.fakeAnalogTickSpeed=20
    var.fakeAnalogMultiplier=1.1
    var.aimCenterX=screen.Width/2
    var.aimCenterY=screen.Height/2
+   var.leftStickAim = true
    var.invMiniMap = false
 
    // Variable / Don't Edit
@@ -42,7 +44,8 @@ if (Starting) {
    var.aimModePrev=false;
    var.aimModePressed=false;
    var.tActiveItem=1
-   var.autoTunnelMode=false   
+   var.autoTunnelMode=false      
+   var.autoTunnelModeSave=false
    var.autoTunnelModePressed=false
    var.dirSelect=false
    var.autodDir=0                 
@@ -131,6 +134,14 @@ if (Starting) {
  * rightStickX - Right stick deadzone corrected X axis
  * rightStickY - Right stick deadzone corrected Y axis
  */
+// Left stick direction detecting and setting                  
+var.leftXDir = 0
+if( xinput.LeftStickX < -1*var.leftDeadZone) var.leftXDir = -1
+if( xinput.LeftStickX > var.leftDeadZone) var.leftXDir = 1
+var.leftYDir = 0
+if( xinput.LeftStickY < -1*var.leftDeadZone) var.leftYDir = -1
+if( xinput.LeftStickY > var.leftDeadZone) var.leftYDir = 1
+   
 // Right stick direction detecting and setting                      
 var.rightXDir = 0
 if( xinput.RightStickX < -1*var.rightDeadZone) var.rightXDir = -1
@@ -139,20 +150,18 @@ var.rightYDir = 0
 if( xinput.RightStickY < -1*var.rightDeadZone) var.rightYDir = -1
 if( xinput.RightStickY > var.rightDeadZone) var.rightYDir = 1
 
-// Left stick direction detecting and setting                  
-var.leftXDir = 0
-if( xinput.LeftStickX < -1*var.leftDeadZone) var.leftXDir = -1
-if( xinput.LeftStickX > var.leftDeadZone) var.leftXDir = 1
-var.leftYDir = 0
-if( xinput.LeftStickY < -1*var.leftDeadZone) var.leftYDir = -1
-if( xinput.LeftStickY > var.leftDeadZone) var.leftYDir = 1
-
 // Analog deadzone smoothing                                                                                               
 var.leftStickX =var.leftXDir* (abs(xinput.LeftStickX) -var.leftDeadZone) *(1/(1-var.leftDeadZone))
 var.leftStickY =var.leftYDir* (abs(xinput.LeftStickY) -var.leftDeadZone) *(1/(1-var.leftDeadZone))
-var.rightStickX=var.rightXDir*(abs(xinput.RightStickX)-var.rightDeadZone)*(1/(1-var.rightDeadZone))
-var.rightStickY=var.rightYDir*(abs(xinput.RightStickY)-var.rightDeadZone)*(1/(1-var.rightDeadZone))
-
+if (var.leftStickAim && var.autoTunnelMode == false && var.aimMode && var.rightXDir == 0 && var.rightYDir == 0){
+    var.rightStickX=var.leftStickX
+    var.rightStickY=var.leftStickY
+    var.rightXDir=var.leftXDir    
+    var.rightYDir=var.leftYDir
+}else{
+    var.rightStickX=var.rightXDir*(abs(xinput.RightStickX)-var.rightDeadZone)*(1/(1-var.rightDeadZone))
+    var.rightStickY=var.rightYDir*(abs(xinput.RightStickY)-var.rightDeadZone)*(1/(1-var.rightDeadZone))
+}
 
 /* Button Mapping
  *               
@@ -165,9 +174,7 @@ var.rightStickY=var.rightYDir*(abs(xinput.RightStickY)-var.rightDeadZone)*(1/(1-
 /* Inventory */ key.Escape = xinput.Start
 /* Action */ mouse.RightButton = xinput.LeftThumb
 /* Jump */ key.Space = xinput.RightTrigger
-/* Auto Select */ key.LeftShift=xinput.LeftTrigger 
-/* Map */ key.M = xinput.Back
-/* Quick Heal */ key.H = xinput.B
+/* Auto Select */ key.LeftShift=xinput.LeftTrigger
 
 /* Complex
  *  - Mapping for buttons that must be changed elsewhere in the code
@@ -180,7 +187,8 @@ var.rightStickY=var.rightYDir*(abs(xinput.RightStickY)-var.rightDeadZone)*(1/(1-
 // No Special Mode
 if ( (var.autoTunnelMode != true) && !var.invMode){
     /* First Item */ key.One = xinput.Up
-    /* Second Item */ key.Two = xinput.Down
+    /* Second Item */ key.Two = xinput.Down    
+    /* Map */ key.M = xinput.Back
 }
 // Inventory Cursor Mode Dependant
 if (var.invMode) {
@@ -204,7 +212,8 @@ if (var.invMode) {
     /* Grapple */ key.LeftAlt = xinput.LeftShoulder
     // Complex
     /* Aim Mode */ var.inAimToggle = (key.Equals || xinput.RightThumb)
-    /* Auto Tunneling Mode */ var.inAutoTunnel = (key.Backslash || xinput.X)
+    /* Auto Tunneling Mode */ var.inAutoTunnel = (key.Backslash || xinput.X)  
+    /* Quick Heal */ key.H = xinput.B
 }
 if ( var.autoTunnelMode){
     // Inventory Cursor Movement
@@ -330,7 +339,6 @@ if(var.fakeAnalog){
 
 // Inventory Mode Complex Controls
 if (var.invMode) {
-    var.autoTunnelMode = false
     var.tempinvCur = var.invCur
 
     if ( var.inUp && !var.upOnce ) {
@@ -419,10 +427,16 @@ if (var.inInvCursor && !var.invModePressed) then
        var.mouseXPrev = mouse.CursorPosX 
        var.mouseYPrev = mouse.CursorPosY
        mouse.CursorPosX = var.invCurFirstSpotX + (var.invCurHoverX * var.invCurDistX)
-       mouse.CursorPosY = var.invCurFirstSpotY + (var.invCurHoverY * var.invCurDistY)
+       mouse.CursorPosY = var.invCurFirstSpotY + (var.invCurHoverY * var.invCurDistY)     
+       var.autoTunnelModeSave = var.autoTunnelMode
+       var.autoTunnelMode = false
    } else{
        mouse.CursorPosX = var.mouseXPrev
-       mouse.CursorPosY = var.mouseYPrev
+       mouse.CursorPosY = var.mouseYPrev 
+       var.autoTunnelMode = var.autoTunnelModeSave
+       if(var.autoTunnelMode){
+        var.dirSelect = false
+       }
    }
 else if ((var.inInvCursor != true) && var.invModePressed)  then
     // End
@@ -436,11 +450,15 @@ if (var.inAutoTunnel && !var.autoTunnelModePressed) then
     toggle(var.autoTunnelModePressed);
     if (var.autoTunnelMode) {
      
-        var.autodDir=0
-        var.aimMode = var.aimModePrev
+        var.autodDir=0        
+       var.mouseXPrev = mouse.CursorPosX 
+       var.mouseYPrev = mouse.CursorPosY     
+        var.aimModePrev = var.aimMode   
         var.aimMode = false
     } else{
-        var.aimModePrev = var.aimMode
+        var.aimMode = var.aimModePrev  
+       mouse.CursorPosX = var.mouseXPrev
+       mouse.CursorPosY = var.mouseYPrev 
     }
 }else if ((var.inAutoTunnel != true) && var.autoTunnelModePressed)  then
     // Release
