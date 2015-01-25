@@ -1,0 +1,609 @@
+﻿
+
+/* Constructor
+ *
+ * Initilizes variables
+ *
+ *  Settings
+ *
+ *  cursorCenterDistance - The distance from the center the cursor can go out in aim mode.
+ *  rightDeadZone - The amount of dead zone the right stick should have for hiding the cursor in aim mode
+ *  leftDeadZone - Left stick dead zone
+ *  mouseMoveSpeed - The speed the mouse cursor moves in default mode
+ *  fakeAnalog - Enables fake analog mode. Read more further down.
+ *  fakeAnalogExponential - Uses square root to raise the value on a scale to speed up faster.
+ *  fakeAnalogTickSpeed - Full duratation of a "tick" in milliseconds in fake analog mode.
+ *  fakeAnalogMultiplier - Multiplied by the analog signal to set sensitivity.      
+ *  aimCenterX - X Center for the cursor in aim mode. Default is center screen.
+ *  aimCenterY - Y Center for the cursor in aim mode. Default is center screen.
+ *  invMiniMap - True if you use the mini map. Affects the inventory cursor 
+ *
+ *  Controls
+ *          
+ *  See line 157
+ */
+if (Starting) {
+
+   // Fixed / Configurable
+   var.cursorCenterDistance=screen.Height/5;   
+   var.rightDeadZone=0.1
+   var.leftDeadZone=0.2
+   var.mouseMoveSpeed = 20;
+   var.fakeAnalog=true;
+   var.fakeAnalogExponential=true;
+   var.fakeAnalogTickSpeed=20
+   var.fakeAnalogMultiplier=1.1
+   var.aimCenterX=screen.Width/2
+   var.aimCenterY=screen.Height/2
+   var.invMiniMap = false
+
+   // Variable / Don't Edit
+   var.aimMode=false;       
+   var.aimModePrev=false;
+   var.aimModePressed=false;
+   var.tActiveItem=1
+   var.autoTunnelMode=false   
+   var.autoTunnelModePressed=false
+   var.dirSelect=false
+   var.autodDir=0                 
+   var.scrollUpOnce = false           
+   var.scrollDownOnce = false     
+   var.upOnce = false
+   var.downOnce = false 
+   var.leftOnce = false
+   var.rightOnce = false     
+   var.leftBracketOnce = false
+   var.rightBracketOnce = false   
+   var.slashOnce = false
+   var.analogXCalced=0       
+   var.analogYCalced=0      
+   var.invMode=false;
+   var.invModePressed=false;
+   var.mouseXPrev=0         
+   var.mouseYPrev=0
+
+   // Inventory Values / Change if non-functional
+   var.invCur=0
+   var.invCurFirstSpotX = 40
+   var.invCurFirstSpotY = 40
+   var.invCurDistX = 47
+   var.invCurDistY = 47
+   var.invCurSizeX = 10
+   var.invCurSizeY = 5
+   var.invCurHoverX = 0
+   var.invCurHoverY = 0
+
+   var.invFirstSpotX = 40                        
+   var.invFirstSpotY = 40
+   var.invDistX = 47    
+   var.invDistY = 47
+   var.invSizeX = 10
+   var.invSizeY = 5
+   var.invHoverX = 0
+   var.invHoverY = 0      
+
+   var.invMAFirstSpotX = 511
+   var.invMAFirstSpotY = 120
+   var.invMADistX = 37
+   var.invMADistY = 33
+   var.invMASizeX = 2
+   var.invMASizeY = 4
+   var.invMAHoverX = 0
+   var.invMAHoverY = 0
+
+   var.invCheFirstSpotX = 89
+   var.invCheFirstSpotY = 278
+   var.invCheDistX = 42
+   var.invCheDistY = 42
+   var.invCheSizeX = 10
+   var.invCheSizeY = 4
+   var.invCheHoverX = 0
+   var.invCheHoverY = 0 
+
+   var.invAAFirstSpotX = screen.Width - 165
+   if ( var.invMiniMap ) {
+   var.invAAFirstSpotY = 454
+   }else{
+   var.invAAFirstSpotY = 200
+   }
+   var.invAADistX = 47
+   var.invAADistY = 47
+   var.invAASizeX = 3
+   var.invAASizeY = 8
+   var.invAAHoverX = 0
+   var.invAAHoverY = 0
+
+   var.invQuickX = 530
+   var.invQuickY = 360
+
+   // Input defaults
+   var.inInvCursor = false
+}
+
+/* Calculated Control Values
+ * Values that can change between loops that are usefull for control mapping
+ *                                                                          
+ * rightYDir - Right stick Y axis as -1/0/1                                 
+ * rightXDir - Right stick X axis as -1/0/1                               
+ * leftYDir - Left stick Y axis as -1/0/1
+ * leftXDir - Left stick X axis as -1/0/1
+ *
+ * rightStickX - Right stick deadzone corrected X axis
+ * rightStickY - Right stick deadzone corrected Y axis
+ */
+// Right stick direction detecting and setting                      
+var.rightXDir = 0
+if( xinput.RightStickX < -1*var.rightDeadZone) var.rightXDir = -1
+if( xinput.RightStickX > var.rightDeadZone) var.rightXDir = 1
+var.rightYDir = 0
+if( xinput.RightStickY < -1*var.rightDeadZone) var.rightYDir = -1
+if( xinput.RightStickY > var.rightDeadZone) var.rightYDir = 1
+
+// Left stick direction detecting and setting                  
+var.leftXDir = 0
+if( xinput.LeftStickX < -1*var.leftDeadZone) var.leftXDir = -1
+if( xinput.LeftStickX > var.leftDeadZone) var.leftXDir = 1
+var.leftYDir = 0
+if( xinput.LeftStickY < -1*var.leftDeadZone) var.leftYDir = -1
+if( xinput.LeftStickY > var.leftDeadZone) var.leftYDir = 1
+
+// Analog deadzone smoothing                                                                                               
+var.leftStickX =var.leftXDir* (abs(xinput.LeftStickX) -var.leftDeadZone) *(1/(1-var.leftDeadZone))
+var.leftStickY =var.leftYDir* (abs(xinput.LeftStickY) -var.leftDeadZone) *(1/(1-var.leftDeadZone))
+var.rightStickX=var.rightXDir*(abs(xinput.RightStickX)-var.rightDeadZone)*(1/(1-var.rightDeadZone))
+var.rightStickY=var.rightYDir*(abs(xinput.RightStickY)-var.rightDeadZone)*(1/(1-var.rightDeadZone))
+
+
+/* Button Mapping
+ *               
+ * Basic mapping and complex mapping occur here
+ */
+
+/* Basic
+ *  - Mapping for buttons that can be changed directly
+ */
+/* Inventory */ key.Escape = xinput.Start
+/* Action */ mouse.RightButton = xinput.LeftThumb
+/* Jump */ key.Space = xinput.RightTrigger
+/* Auto Select */ key.LeftShift=xinput.LeftTrigger 
+/* Map */ key.M = xinput.Back
+
+/* Complex
+ *  - Mapping for buttons that must be changed elsewhere in the code
+ */
+/* Inventory Cursor Mode */ var.inInvCursor = (key.Minus || xinput.Y)
+/* Prev Item */ var.inPrevItem = (key.left || xinput.Left)
+/* Next Item */ var.inNextItem = (key.right || xinput.Right)
+/* Reset Toggle Modes */ var.inToggleReset = (key.Home || (xinput.LeftShoulder && xinput.RightShoulder && xinput.A) )
+
+// No Special Mode
+if ( (var.autoTunnelMode != true) && !var.invMode){
+    /* First Item */ key.One = xinput.Up
+    /* Second Item */ key.Two = xinput.Down
+}
+// Inventory Cursor Mode Dependant
+if (var.invMode) {
+    // Basic     
+    /* Pick Up Item */ mouse.LeftButton = xinput.A   
+    /* Pick Up Single Item */ mouse.RightButton = xinput.B 
+    /* Quick Stack */ var.inQuickStack = (key.Slash || xinput.X)
+    // Complex
+    /* Prev Inventory Space */ var.inPrevInvSpace = (key.LeftBracket || xinput.LeftShoulder)
+    /* Next Inventory Space */ var.inNextInvSpace = (key.RightBracket || xinput.RightShoulder)
+    
+    // Inventory Cursor Movement
+    var.inLeft = (key.left || xinput.Left)
+    var.inRight = (key.right || xinput.Right)
+    var.inUp = (key.up || xinput.Up)
+    var.inDown = (key.down || xinput.Down)
+} else {     
+    // Basic     
+    /* Smart Cursor */ key.LeftControl = xinput.A
+    /* Attack / Dig */ mouse.LeftButton = xinput.RightShoulder
+    /* Grapple */ key.LeftAlt = xinput.LeftShoulder
+    // Complex
+    /* Aim Mode */ var.inAimToggle = (key.Equals || xinput.RightThumb)
+    /* Auto Tunneling Mode */ var.inAutoTunnel = (key.Backslash || xinput.X)
+}
+if ( var.autoTunnelMode){
+    // Inventory Cursor Movement
+    var.inLeft = (key.left || xinput.Left)
+    var.inRight = (key.right || xinput.Right)
+    var.inUp = (key.up || xinput.Up)
+    var.inDown = (key.down || xinput.Down)
+}
+
+/* Complex Mapping Code
+ *  - The actions the inputs do
+ */ 
+if ( var.inQuickStack && !var.slashOnce ) {
+    toggle(var.slashOnce)
+    if ( var.slashOnce) {
+        // Store Cursor Position
+        var.mouseXPrevQ=mouse.CursorPosX
+        var.mouseYPrevQ=mouse.CursorPosY
+        // Go to Quick Stack Position
+        mouse.CursorPosX=var.invQuickX              
+        mouse.CursorPosY=var.invQuickY
+        // Click
+        press(mouse.LeftButton)
+        wait 10ms
+        release(mouse.LeftButton)
+        // Restore Original Position
+        mouse.CursorPosX = var.mouseXPrevQ
+        mouse.CursorPosY = var.mouseYPrevQ
+    }
+}else if( (var.inQuickStack == false) && var.slashOnce ) {
+    var.slashOnce = false
+}
+
+
+// D-Pad Controls that disable for direction choosing in auto mode
+if ( (var.autoTunnelMode != true) && !var.invMode){
+
+    // Select Previous Item
+    if ( var.inPrevItem && !var.scrollUpOnce ) {
+        press(mouse.WheelUp)
+        wait 10ms
+        release(mouse.WheelUp)
+        var.scrollUpOnce = true
+    }else if( (var.inPrevItem == false) && var.scrollUpOnce ) {
+        var.scrollUpOnce = false
+    }
+
+    // Select Next Item
+    if ( var.inNextItem && !var.scrollDownOnce ) {
+        press(mouse.WheelDown)
+        wait 10ms
+        release(mouse.WheelDown)
+        var.scrollDownOnce = true
+    }else if( (var.inNextItem == false) && var.scrollDownOnce ) {
+        var.scrollDownOnce = false
+    }
+}
+
+/* Analog stick to WASD with fake analog input mode
+ *
+ *      Takes the analog input from the stick and calculates an on and off
+ * duration based on the tick setting. The values are pulsed giving an analog
+ * feeling to the controls. The stick value is square rooted and multiplied by
+ * the value at the top, doing tis smooths out and caps the input
+ *
+ */
+if(var.fakeAnalog){
+    if (var.fakeAnalogExponential){
+        var.analogXCalced=(sqrt(abs(var.leftStickX)*var.fakeAnalogMultiplier))
+        var.analogYCalced=(sqrt(abs(var.leftStickY)*var.fakeAnalogMultiplier))
+    }else{
+        var.analogXCalced=(abs(var.leftStickX)*var.fakeAnalogMultiplier)
+        var.analogYCalced=(abs(var.leftStickY)*var.fakeAnalogMultiplier)
+    }
+    // Up
+    if ( var.leftYDir == 1 ){
+        var.fakeyon = var.fakeAnalogTickSpeed*var.analogYCalced
+        var.fakeyoff = var.fakeAnalogTickSpeed - var.fakeyon
+
+        key.w = true
+        wait var.fakeyon ms
+        key.w = false
+        wait var.fakeyoff ms
+    }
+    // Left
+    if ( var.leftXDir == -1 )   {
+        var.fakexon = var.fakeAnalogTickSpeed*var.analogXCalced
+        var.fakexoff = var.fakeAnalogTickSpeed - var.fakexon
+
+        key.a = true
+        wait var.fakexon ms
+        key.A = false
+        wait var.fakexoff ms
+    }
+    // Down
+    if ( var.leftYDir == -1 ){
+        var.fakeyon = var.fakeAnalogTickSpeed*var.analogYCalced
+        var.fakeyoff = var.fakeAnalogTickSpeed - var.fakeyon
+
+        key.s = true
+        wait var.fakeyon ms
+        key.s = false
+        wait var.fakeyoff ms
+    }
+    // Right
+    if ( var.leftXDir == 1 ){
+        var.fakexon = var.fakeAnalogTickSpeed*var.analogXCalced
+        var.fakexoff = var.fakeAnalogTickSpeed - var.fakexon
+
+        key.d = true
+        wait var.fakexon ms
+        key.d = false
+        wait var.fakexoff ms
+    }
+
+// Plain input mode
+}else {
+    W = ( var.leftStickY > var.leftDeadZone )
+    A = ( var.leftStickX < -1*var.leftDeadZone )
+    S = ( var.leftStickY < -1*var.leftDeadZone )
+    D = ( var.leftStickX > var.leftDeadZone )
+}
+
+// Inventory Mode Complex Controls
+if (var.invMode) {
+    var.autoTunnelMode = false
+    var.tempinvCur = var.invCur
+
+    if ( var.inUp && !var.upOnce ) {
+        var.upOnce = true      
+    }else if( (var.inUp == true) && var.upOnce ) {
+        var.inUp = false
+    }else if( (var.inUp == false) && var.upOnce ) {
+        var.upOnce = false
+    }
+                                
+    if ( var.inDown && !var.downOnce ) {
+        var.downOnce = true
+    }else if( (var.inDown == true) && var.downOnce ) {
+        var.inDown = false
+    }else if( (var.inDown == false) && var.downOnce ) {
+        var.downOnce = false
+    }
+
+    if ( var.inLeft && !var.leftOnce ) {
+        var.leftOnce = true
+    }else if( (var.inLeft == true) && var.leftOnce ) {
+        var.inLeft = false
+    }else if( (var.inLeft == false) && var.leftOnce ) {
+        var.leftOnce = false
+    }
+
+    if ( var.inRight && !var.rightOnce ) {
+        var.rightOnce = true
+    }else if( (var.inRight == true) && var.rightOnce ) {
+        var.inRight = false
+    }else if( (var.inRight == false) && var.rightOnce ) {
+        var.rightOnce = false
+    }
+
+    if ( var.inPrevInvSpace && !var.leftBracketOnce ) {
+        var.invCur -=1
+        var.leftBracketOnce = true
+    }else if( (var.inPrevInvSpace == false) && var.leftBracketOnce ) {
+        var.leftBracketOnce = false
+    }                                     
+    if ( var.inNextInvSpace && !var.rightBracketOnce ) {
+        var.invCur +=1
+        var.rightBracketOnce = true
+    }else if( (var.inNextInvSpace == false) && var.rightBracketOnce ) {
+        var.rightBracketOnce = false
+    }
+
+     if ( key.M ) var.invMode = false
+
+     if ( var.invCur < 0) var.invCur = 3
+     if ( var.invCur > 3) var.invCur = 0
+
+}
+
+
+
+// Mode disable shortcut
+if (var.inToggleReset){
+    var.autoTunnelMode = false
+    var.aimMode = false
+    var.invMode = false
+}
+
+// Aim Mode togging
+if ( var.inAimToggle && !var.aimModePressed) then
+    // Start
+   toggle(var.aimMode);
+   toggle(var.aimModePressed);
+   if (!var.aimMode){
+       mouse.CursorPosX = var.aimCenterX
+       mouse.CursorPosY = var.aimCenterY
+   }
+else if (( var.inAimToggle != true) && var.aimModePressed)  then
+    // End
+    toggle(var.aimModePressed);
+end
+
+
+// Inventory Mode togging
+if (var.inInvCursor && !var.invModePressed) then
+    // Start
+   toggle(var.invMode);
+   toggle(var.invModePressed);
+   if (var.invMode){
+       // Start
+       var.mouseXPrev = mouse.CursorPosX 
+       var.mouseYPrev = mouse.CursorPosY
+       mouse.CursorPosX = var.invCurFirstSpotX + (var.invCurHoverX * var.invCurDistX)
+       mouse.CursorPosY = var.invCurFirstSpotY + (var.invCurHoverY * var.invCurDistY)
+   } else{
+       mouse.CursorPosX = var.mouseXPrev
+       mouse.CursorPosY = var.mouseYPrev
+   }
+else if ((var.inInvCursor != true) && var.invModePressed)  then
+    // End
+    toggle(var.invModePressed);
+end
+
+// Auto Mode togging
+if (var.inAutoTunnel && !var.autoTunnelModePressed) then
+    // Press
+    toggle(var.autoTunnelMode);
+    toggle(var.autoTunnelModePressed);
+    if (var.autoTunnelMode) {
+     
+        var.autodDir=0
+        var.aimMode = var.aimModePrev
+        var.aimMode = false
+    } else{
+        var.aimModePrev = var.aimMode
+    }
+}else if ((var.inAutoTunnel != true) && var.autoTunnelModePressed)  then
+    // Release
+    toggle(var.autoTunnelModePressed);
+    key.w = false
+    key.a = false
+    key.s = false
+    key.d = false
+    var.autodDir=0
+end
+
+if (( var.autoTunnelMode != true) && var.autoTunnelModePressed) {
+
+}
+
+// Inventory Mode
+if (var.invMode){
+    // Due to a lack of arrays in GlovePIE this changes out one set of values
+    if ( var.tempinvCur != var.invCur) {
+        if( var.tempinvCur == 0) {
+             var.invHoverX = var.invCurHoverX
+             var.invHoverY = var.invCurHoverY  
+        }else if( var.tempinvCur == 1) {
+             var.invMAHoverX = var.invCurHoverX
+             var.invMAHoverY = var.invCurHoverY
+        }else if( var.tempinvCur == 2) {
+             var.invCheHoverX = var.invCurHoverX
+             var.invCheHoverY = var.invCurHoverY
+        }else if( var.tempinvCur == 3) {
+             var.invAAHoverX = var.invCurHoverX
+             var.invAAHoverY = var.invCurHoverY
+        }
+         
+        if( var.invCur == 0) {
+            var.invCurFirstSpotX = var.invFirstSpotX
+            var.invCurFirstSpotY = var.invFirstSpotY
+            var.invCurDistX = var.invDistX
+            var.invCurDistY = var.invDistY
+            var.invCurSizeX = var.invSizeX
+            var.invCurSizeY = var.invSizeY
+            var.invCurHoverX = var.invHoverX
+            var.invCurHoverY = var.invHoverY 
+        }else if( var.invCur == 1) {   
+            var.invCurFirstSpotX = var.invMAFirstSpotX
+            var.invCurFirstSpotY = var.invMAFirstSpotY
+            var.invCurDistX = var.invMADistX
+            var.invCurDistY = var.invMADistY
+            var.invCurSizeX = var.invMASizeX
+            var.invCurSizeY = var.invMASizeY
+            var.invCurHoverX = var.invMAHoverX
+            var.invCurHoverY = var.invMAHoverY
+        }else if( var.invCur == 2) {
+            var.invCurFirstSpotX = var.invCheFirstSpotX
+            var.invCurFirstSpotY = var.invCheFirstSpotY
+            var.invCurDistX = var.invCheDistX
+            var.invCurDistY = var.invCheDistY
+            var.invCurSizeX = var.invCheSizeX
+            var.invCurSizeY = var.invCheSizeY
+            var.invCurHoverX = var.invCheHoverX
+            var.invCurHoverY = var.invCheHoverY
+        }else if( var.invCur == 3) {
+            var.invCurFirstSpotX = var.invAAFirstSpotX
+            var.invCurFirstSpotY = var.invAAFirstSpotY
+            var.invCurDistX = var.invAADistX
+            var.invCurDistY = var.invAADistY
+            var.invCurSizeX = var.invAASizeX
+            var.invCurSizeY = var.invAASizeY
+            var.invCurHoverX = var.invAAHoverX
+            var.invCurHoverY = var.invAAHoverY
+        }
+            
+       mouse.CursorPosX = var.invCurFirstSpotX + (var.invCurHoverX * var.invCurDistX)
+       mouse.CursorPosY = var.invCurFirstSpotY + (var.invCurHoverY * var.invCurDistY)
+    }
+
+    if( var.inUp && (var.invCurHoverY > 0)) var.invCurHoverY -= 1
+    if( var.inDown && (var.invCurHoverY < var.invCurSizeY-1)  ) var.invCurHoverY += 1
+    if( var.inLeft && (var.invCurHoverX > 0)) var.invCurHoverX -= 1
+    if( var.inRight && (var.invCurHoverX < var.invCurSizeX-1) ) var.invCurHoverX += 1
+       
+    if( var.upOnce || var.inDown || var.inLeft || var.inRight ) {
+       mouse.CursorPosX = var.invCurFirstSpotX + (var.invCurHoverX * var.invCurDistX)
+       mouse.CursorPosY = var.invCurFirstSpotY + (var.invCurHoverY * var.invCurDistY)
+    }
+}else{
+
+    if (!var.autoTunnelMode){
+        // Aim Mode cursor
+        if (var.aimMode && (var.rightXDir == 0) && (var.rightYDir == 0)){
+            mouse.CursorPosX = screen.Width
+            mouse.CursorPosY = screen.Height
+        else if (var.aimMode  && ((var.rightXDir != 0) || (var.rightYDir != 0))){
+            mouse.CursorPosX = var.aimCenterX + (var.cursorCenterDistance * (var.rightStickX))
+            mouse.CursorPosY = var.aimCenterY + -1*(var.cursorCenterDistance * (var.rightStickY))
+    
+        }else if((!var.aimMode)  && ((var.rightXDir != 0) || (var.rightYDir != 0))){
+              // Reset cursor when exiting aim mode
+            mouse.CursorPosX += (var.rightStickX * var.mouseMoveSpeed)
+            mouse.CursorPosY += -1*(var.rightStickY * var.mouseMoveSpeed)
+        }
+    }else{
+        // Mouse durring auto mode
+        if( var.autodDir != 0) mouse.LeftButton = var.aimMode
+    }
+    
+    // Auto dig mode
+    if (var.autoTunnelMode && !var.dirSelect && var.autodDir == 0){
+        // Startup
+        var.dirSelect=true
+        var.autodDir=0
+    }
+    if (var.autoTunnelMode && var.dirSelect){
+        // Direction Chooser
+        if( var.inUp ) var.autodDir = 1
+        if( var.inDown ) var.autodDir = 2
+        if( var.inLeft ) var.autodDir = 3
+        if( var.inRight ) var.autodDir = 4
+    
+        if( var.autodDir != 0) var.dirSelect = false
+    }               
+    if (var.autoTunnelMode && !var.dirSelect && var.autodDir != 0){
+        // Move and point
+        // Up
+        if ( var.autodDir = 1 ){
+            mouse.CursorPosX = var.aimCenterX + (var.cursorCenterDistance * (0))
+            mouse.CursorPosY = var.aimCenterY + -1*(var.cursorCenterDistance * (1))
+            key.w = true
+        }
+        // Down
+        if ( var.autodDir = 2 ){
+            mouse.CursorPosX = var.aimCenterX + (var.cursorCenterDistance * (0))
+            mouse.CursorPosY = var.aimCenterY + -1*(var.cursorCenterDistance * (-1))
+            key.s = true
+        }
+        // Left
+        if ( var.autodDir = 3 ){
+            mouse.CursorPosX = var.aimCenterX + (var.cursorCenterDistance * (-1))
+            mouse.CursorPosY = var.aimCenterY + -1*(var.cursorCenterDistance * (0))
+            key.a = true
+        }
+        // Right
+        if ( var.autodDir = 4 ){
+            mouse.CursorPosX = var.aimCenterX + (var.cursorCenterDistance * (1))
+            mouse.CursorPosY = var.aimCenterY + -1*(var.cursorCenterDistance * (0))
+            key.d = true
+        }
+    
+        // Change direction mid dig
+        if( var.inUp ) var.autodDir = 1
+        if( var.inDown ) var.autodDir = 2
+        if( var.inLeft ) var.autodDir = 3
+        if( var.inRight ) var.autodDir = 4
+        if( var.inUp || var.inDown || var.inLeft || var.inRight ) {
+            key.w = false
+            key.a = false
+            key.s = false
+            key.d = false
+        }
+    }
+}
+
+
+if (var.invMode){
+    debug = "inv: " + var.invHoverX+"," + var.invHoverY
+}else{
+    debug = "Cur: " + mouse.CursorPosX+"," + mouse.CursorPosY+"Analog Left: " + var.leftStickX + ":" + var.analogXCalced + "," + var.leftStickY + ":" + var.analogYCalced + " Right: " + var.rightStickX + "," + var.rightStickY
+}
