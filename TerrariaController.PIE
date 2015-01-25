@@ -167,6 +167,7 @@ var.rightStickY=var.rightYDir*(abs(xinput.RightStickY)-var.rightDeadZone)*(1/(1-
 /* Jump */ key.Space = xinput.RightTrigger
 /* Auto Select */ key.LeftShift=xinput.LeftTrigger 
 /* Map */ key.M = xinput.Back
+/* Quick Heal */ key.H = xinput.B
 
 /* Complex
  *  - Mapping for buttons that must be changed elsewhere in the code
