@@ -18,6 +18,7 @@
  *  aimCenterY - Y Center for the cursor in aim mode. Default is center screen.
  *  leftStickAim - Point in movement direction in aim mode when not using right stick
  *  invMiniMap - True if you use the mini map. Affects the inventory cursor 
+ *  windowedOffSet - Amount to add to position values to offset windoed mode. set to 0 to diable
  *
  *  Controls
  *          
@@ -29,7 +30,7 @@ if (Starting) {
    var.cursorCenterDistance=screen.Height/5;   
    var.rightDeadZone=0.1
    var.leftDeadZone=0.2
-   var.mouseMoveSpeed = 50;
+   var.mouseMoveSpeed = 35;
    var.fakeAnalog=true;
    var.fakeAnalogExponential=true;
    var.fakeAnalogTickSpeed=20
@@ -37,7 +38,8 @@ if (Starting) {
    var.aimCenterX=screen.Width/2
    var.aimCenterY=screen.Height/2
    var.leftStickAim = true
-   var.invMiniMap = false
+   var.invMiniMap = true
+   var.windowedOffSet = 0
 
    // Variable / Don't Edit
    var.aimMode=false;       
@@ -68,7 +70,7 @@ if (Starting) {
    // Inventory Values / Change if non-functional
    var.invCur=0
    var.invCurFirstSpotX = 40
-   var.invCurFirstSpotY = 40
+   var.invCurFirstSpotY = 40 + var.windowedOffSet
    var.invCurDistX = 47
    var.invCurDistY = 47
    var.invCurSizeX = 10
@@ -77,7 +79,7 @@ if (Starting) {
    var.invCurHoverY = 0
 
    var.invFirstSpotX = 40                        
-   var.invFirstSpotY = 40
+   var.invFirstSpotY = 40 + var.windowedOffSet
    var.invDistX = 47    
    var.invDistY = 47
    var.invSizeX = 10
@@ -86,7 +88,7 @@ if (Starting) {
    var.invHoverY = 0      
 
    var.invMAFirstSpotX = 511
-   var.invMAFirstSpotY = 120
+   var.invMAFirstSpotY = 120 + var.windowedOffSet
    var.invMADistX = 37
    var.invMADistY = 33
    var.invMASizeX = 2
@@ -95,7 +97,7 @@ if (Starting) {
    var.invMAHoverY = 0
 
    var.invCheFirstSpotX = 89
-   var.invCheFirstSpotY = 278
+   var.invCheFirstSpotY = 278 + var.windowedOffSet
    var.invCheDistX = 42
    var.invCheDistY = 42
    var.invCheSizeX = 10
@@ -105,9 +107,9 @@ if (Starting) {
 
    var.invAAFirstSpotX = screen.Width - 165
    if ( var.invMiniMap ) {
-   var.invAAFirstSpotY = 454
+   var.invAAFirstSpotY = 454 + var.windowedOffSet
    }else{
-   var.invAAFirstSpotY = 200
+   var.invAAFirstSpotY = 200 + var.windowedOffSet
    }
    var.invAADistX = 47
    var.invAADistY = 47
@@ -117,7 +119,7 @@ if (Starting) {
    var.invAAHoverY = 0
 
    var.invQuickX = 530
-   var.invQuickY = 360
+   var.invQuickY = 360 + var.windowedOffSet
 
    // Input defaults
    var.inInvCursor = false
