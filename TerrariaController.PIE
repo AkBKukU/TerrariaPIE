@@ -18,7 +18,7 @@
  *  aimCenterY - Y Center for the cursor in aim mode. Default is center screen.
  *  leftStickAim - Point in movement direction in aim mode when not using right stick
  *  invMiniMap - True if you use the mini map. Affects the inventory cursor 
- *  windowedOffSet - Amount to add to position values to offset windoed mode. set to 0 to diable
+ *  windowedOffSet - Amount to add to y position values to offset windoed mode. set to 0 to disable
  *
  *  Controls
  *          
@@ -33,7 +33,7 @@ if (Starting) {
    var.mouseMoveSpeed = 35;
    var.fakeAnalog=true;
    var.fakeAnalogExponential=true;
-   var.fakeAnalogTickSpeed=20
+   var.fakeAnalogTickSpeed=100
    var.fakeAnalogMultiplier=1.1
    var.aimCenterX=screen.Width/2
    var.aimCenterY=screen.Height/2
@@ -66,6 +66,8 @@ if (Starting) {
    var.invModePressed=false;
    var.mouseXPrev=0         
    var.mouseYPrev=0
+   var.killOnce=false
+   var.killToggle = false
 
    // Inventory Values / Change if non-functional
    var.invCur=0
@@ -123,7 +125,21 @@ if (Starting) {
 
    // Input defaults
    var.inInvCursor = false
+
+
+
 }
+
+// Kill switch key for disabling controller
+// Aim Mode togging
+if ( key.ScrollLock && !var.killOnce) then
+   toggle(var.killToggle);
+   toggle(var.killOnce);
+else if (( key.ScrollLock != true) && var.killOnce)  then
+    toggle(var.killOnce);
+end
+
+if ( var.killToggle != true ) {
 
 /* Calculated Control Values
  * Values that can change between loops that are usefull for control mapping
@@ -627,4 +643,6 @@ if (var.invMode){
     debug = "inv: " + var.invHoverX+"," + var.invHoverY
 }else{
     debug = "Cur: " + mouse.CursorPosX+"," + mouse.CursorPosY+"Analog Left: " + var.leftStickX + ":" + var.analogXCalced + "," + var.leftStickY + ":" + var.analogYCalced + " Right: " + var.rightStickX + "," + var.rightStickY
+}
+
 }
