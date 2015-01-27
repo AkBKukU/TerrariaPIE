@@ -131,42 +131,56 @@ if (Starting) {
 }
 
 // Kill switch key for disabling controller
+var.inKill = key.ScrollLock
 // Aim Mode togging
-if ( key.ScrollLock && !var.killOnce) then
+if ( var.inKill && !var.killOnce) then
    toggle(var.killToggle);
    toggle(var.killOnce);
-else if (( key.ScrollLock != true) && var.killOnce)  then
+else if (( var.inKill != true) && var.killOnce)  then
     toggle(var.killOnce);
 end
 
 if ( var.killToggle != true ) {
 
-/* Calculated Control Values
- * Values that can change between loops that are usefull for control mapping
+
+/*  Analog Input Adjusting
+ *          
+ * Set Analog Inputs here
+ *
+ * Has Values that can change between loops that are usefull for control mapping
  *                                                                          
  * rightYDir - Right stick Y axis as -1/0/1                                 
- * rightXDir - Right stick X axis as -1/0/1                               
+ * rightXDir - Right stick X axis as -1/0/1
  * leftYDir - Left stick Y axis as -1/0/1
  * leftXDir - Left stick X axis as -1/0/1
  *
  * rightStickX - Right stick deadzone corrected X axis
  * rightStickY - Right stick deadzone corrected Y axis
  */
+
+ // Left Stick Input
+ var.leftStickX =xinput.LeftStickX  
+ var.leftStickY =xinput.LeftStickY
+                     
+ // Right Stick Input
+ var.rightStickX=xinput.RightStickX
+ var.rightStickY=xinput.RightStickY
+
 // Left stick direction detecting and setting                  
 var.leftXDir = 0
-if( xinput.LeftStickX < -1*var.leftDeadZone) var.leftXDir = -1
-if( xinput.LeftStickX > var.leftDeadZone) var.leftXDir = 1
+if( var.leftStickX < -1*var.leftDeadZone) var.leftXDir = -1
+if( var.leftStickX > var.leftDeadZone) var.leftXDir = 1
 var.leftYDir = 0
-if( xinput.LeftStickY < -1*var.leftDeadZone) var.leftYDir = -1
-if( xinput.LeftStickY > var.leftDeadZone) var.leftYDir = 1
+if( var.leftStickY < -1*var.leftDeadZone) var.leftYDir = -1
+if( var.leftStickY > var.leftDeadZone) var.leftYDir = 1
    
 // Right stick direction detecting and setting                      
 var.rightXDir = 0
-if( xinput.RightStickX < -1*var.rightDeadZone) var.rightXDir = -1
-if( xinput.RightStickX > var.rightDeadZone) var.rightXDir = 1
+if( var.rightStickX < -1*var.rightDeadZone) var.rightXDir = -1
+if( var.rightStickX > var.rightDeadZone) var.rightXDir = 1
 var.rightYDir = 0
-if( xinput.RightStickY < -1*var.rightDeadZone) var.rightYDir = -1
-if( xinput.RightStickY > var.rightDeadZone) var.rightYDir = 1
+if( var.rightStickY < -1*var.rightDeadZone) var.rightYDir = -1
+if( var.rightStickY > var.rightDeadZone) var.rightYDir = 1
 
 // Analog deadzone smoothing                                                                                               
 var.leftStickX =var.leftXDir* (abs(xinput.LeftStickX) -var.leftDeadZone) *(1/(1-var.leftDeadZone))
@@ -180,9 +194,10 @@ if (var.leftStickAim && var.autoTunnelMode == false && var.aimMode && var.rightX
     var.rightStickX=var.rightXDir*(abs(xinput.RightStickX)-var.rightDeadZone)*(1/(1-var.rightDeadZone))
     var.rightStickY=var.rightYDir*(abs(xinput.RightStickY)-var.rightDeadZone)*(1/(1-var.rightDeadZone))
 }
-
 /* Button Mapping
- *               
+ *                        
+ * Set Button Inputs here
+ *
  * Basic mapping and complex mapping occur here
  */
 
