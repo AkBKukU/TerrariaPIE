@@ -159,12 +159,12 @@ if ( var.killToggle != true ) {
  */
 
  // Left Stick Input
- var.leftStickX =xinput.LeftStickX  
- var.leftStickY =xinput.LeftStickY
+ var.leftStickX =xinput.LeftStickX + joystick.x
+ var.leftStickY =xinput.LeftStickY + joystick.y
                      
  // Right Stick Input
- var.rightStickX=xinput.RightStickX
- var.rightStickY=xinput.RightStickY
+ var.rightStickX=xinput.RightStickX + joystick.z
+ var.rightStickY=xinput.RightStickY - joystick.r
 
 // Left stick direction detecting and setting                  
 var.leftXDir = 0
@@ -183,16 +183,16 @@ if( var.rightStickY < -1*var.rightDeadZone) var.rightYDir = -1
 if( var.rightStickY > var.rightDeadZone) var.rightYDir = 1
 
 // Analog deadzone smoothing                                                                                               
-var.leftStickX =var.leftXDir* (abs(xinput.LeftStickX) -var.leftDeadZone) *(1/(1-var.leftDeadZone))
-var.leftStickY =var.leftYDir* (abs(xinput.LeftStickY) -var.leftDeadZone) *(1/(1-var.leftDeadZone))
+var.leftStickX =var.leftXDir* (abs( var.leftStickX) -var.leftDeadZone) *(1/(1-var.leftDeadZone))
+var.leftStickY =var.leftYDir* (abs( var.leftStickY) -var.leftDeadZone) *(1/(1-var.leftDeadZone))
 if (var.leftStickAim && var.autoTunnelMode == false && var.aimMode && var.rightXDir == 0 && var.rightYDir == 0){
     var.rightStickX=var.leftStickX
     var.rightStickY=var.leftStickY
     var.rightXDir=var.leftXDir    
     var.rightYDir=var.leftYDir
 }else{
-    var.rightStickX=var.rightXDir*(abs(xinput.RightStickX)-var.rightDeadZone)*(1/(1-var.rightDeadZone))
-    var.rightStickY=var.rightYDir*(abs(xinput.RightStickY)-var.rightDeadZone)*(1/(1-var.rightDeadZone))
+    var.rightStickX=var.rightXDir*(abs(var.rightStickX)-var.rightDeadZone)*(1/(1-var.rightDeadZone))
+    var.rightStickY=var.rightYDir*(abs(var.rightStickY)-var.rightDeadZone)*(1/(1-var.rightDeadZone))
 }
 /* Button Mapping
  *                        
@@ -204,56 +204,56 @@ if (var.leftStickAim && var.autoTunnelMode == false && var.aimMode && var.rightX
 /* Basic
  *  - Mapping for buttons that can be changed directly
  */
-/* Inventory */ key.Escape = xinput.Start
-/* Action */ mouse.RightButton = xinput.LeftThumb
-/* Jump */ key.Space = xinput.RightTrigger
-/* Auto Select */ key.LeftShift=xinput.LeftTrigger
+/* Inventory */ key.Escape = ( xinput.Start || joystick.button10)
+/* Action */ mouse.RightButton = (xinput.LeftThumb || joystick.button11)
+/* Jump */ key.Space = (xinput.RightTrigger || joystick.button8)
+/* Auto Select */ key.LeftShift=(xinput.LeftTrigger || joystick.button7)
 
 /* Complex
  *  - Mapping for buttons that must be changed elsewhere in the code
  */
-/* Inventory Cursor Mode */ var.inInvCursor = (key.Minus || xinput.Y)
-/* Prev Item */ var.inPrevItem = (key.left || xinput.Left)
-/* Next Item */ var.inNextItem = (key.right || xinput.Right)
-/* Reset Toggle Modes */ var.inToggleReset = (key.Home || (xinput.LeftShoulder && xinput.RightShoulder && xinput.A) )
+/* Inventory Cursor Mode */ var.inInvCursor = (key.Minus || xinput.Y || joystick.button4)
+/* Prev Item */ var.inPrevItem = (key.left || xinput.Left || joystick.Pov1Left)
+/* Next Item */ var.inNextItem = (key.right || xinput.Right || joystick.Pov1Right)
+/* Reset Toggle Modes */ var.inToggleReset = (key.Home || (xinput.LeftShoulder && xinput.RightShoulder && xinput.A)  || (joystick.button5 && joystick.button6 && joystick.button2))
 
 // No Special Mode
 if ( (var.autoTunnelMode != true) && !var.invMode){
-    /* First Item */ key.One = xinput.Up
-    /* Second Item */ key.Two = xinput.Down    
-    /* Map */ key.M = xinput.Back
+    /* First Item */ key.One = ( xinput.Up || joystick.Pov1Up )
+    /* Second Item */ key.Two = ( xinput.Down || joystick.Pov1Down )
+    /* Map */ key.M = ( xinput.Back || joystick.button9)
 }
 // Inventory Cursor Mode Dependant
 if (var.invMode) {
     // Basic     
-    /* Pick Up Item */ mouse.LeftButton = xinput.A   
-    /* Pick Up Single Item */ mouse.RightButton = xinput.B 
-    /* Quick Stack */ var.inQuickStack = (key.Slash || xinput.X)
+    /* Pick Up Item */ mouse.LeftButton = ( xinput.A || joystick.button2)
+    /* Pick Up Single Item */ mouse.RightButton = ( xinput.B || joystick.button3)
+    /* Quick Stack */ var.inQuickStack = (key.Slash || xinput.X || joystick.button1)
     // Complex
-    /* Prev Inventory Space */ var.inPrevInvSpace = (key.LeftBracket || xinput.LeftShoulder)
-    /* Next Inventory Space */ var.inNextInvSpace = (key.RightBracket || xinput.RightShoulder)
+    /* Prev Inventory Space */ var.inPrevInvSpace = (key.LeftBracket || xinput.LeftShoulder || joystick.button5)
+    /* Next Inventory Space */ var.inNextInvSpace = (key.RightBracket || xinput.RightShoulder || joystick.button6)
     
     // Inventory Cursor Movement
-    var.inLeft = (key.left || xinput.Left)
-    var.inRight = (key.right || xinput.Right)
-    var.inUp = (key.up || xinput.Up)
-    var.inDown = (key.down || xinput.Down)
+    var.inLeft = (key.left || xinput.Left || joystick.Pov1Left)
+    var.inRight = (key.right || xinput.Right || joystick.Pov1Right)
+    var.inUp = (key.up || xinput.Up || joystick.Pov1Up)
+    var.inDown = (key.down || xinput.Down || joystick.Pov1Down)
 } else {     
     // Basic     
-    /* Smart Cursor */ key.LeftControl = xinput.A
-    /* Attack / Dig */ mouse.LeftButton = xinput.RightShoulder
-    /* Grapple */ key.LeftAlt = xinput.LeftShoulder
+    /* Smart Cursor */ key.LeftControl = (xinput.A || joystick.button2)
+    /* Attack / Dig */ mouse.LeftButton = (xinput.RightShoulder || joystick.button6)
+    /* Grapple */ key.LeftAlt = (xinput.LeftShoulder || joystick.button6)
     // Complex
-    /* Aim Mode */ var.inAimToggle = (key.Equals || xinput.RightThumb)
-    /* Auto Tunneling Mode */ var.inAutoTunnel = (key.Backslash || xinput.X)  
-    /* Quick Heal */ key.H = xinput.B
+    /* Aim Mode */ var.inAimToggle = (key.Equals || xinput.RightThumb || joystick.button12)
+    /* Auto Tunneling Mode */ var.inAutoTunnel = (key.Backslash || xinput.X || joystick.button1)
+    /* Quick Heal */ key.H = (xinput.B || joystick.button3)
 }
 if ( var.autoTunnelMode){
-    // Inventory Cursor Movement
-    var.inLeft = (key.left || xinput.Left)
-    var.inRight = (key.right || xinput.Right)
-    var.inUp = (key.up || xinput.Up)
-    var.inDown = (key.down || xinput.Down)
+    // Auto Tunnel Direction
+    var.inLeft = (key.left || xinput.Left || joystick.Pov1Left)
+    var.inRight = (key.right || xinput.Right || joystick.Pov1Right)
+    var.inUp = (key.up || xinput.Up || joystick.Pov1Up)
+    var.inDown = (key.down || xinput.Down || joystick.Pov1Down)
 }
 
 /* Complex Mapping Code
