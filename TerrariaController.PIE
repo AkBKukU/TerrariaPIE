@@ -160,7 +160,7 @@ if ( var.killToggle != true ) {
 
  // Left Stick Input
  var.leftStickX =xinput.LeftStickX + joystick.x
- var.leftStickY =xinput.LeftStickY + joystick.y
+ var.leftStickY =xinput.LeftStickY - joystick.y
                      
  // Right Stick Input
  var.rightStickX=xinput.RightStickX + joystick.z
@@ -242,7 +242,7 @@ if (var.invMode) {
     // Basic     
     /* Smart Cursor */ key.LeftControl = (xinput.A || joystick.button2)
     /* Attack / Dig */ mouse.LeftButton = (xinput.RightShoulder || joystick.button6)
-    /* Grapple */ key.LeftAlt = (xinput.LeftShoulder || joystick.button6)
+    /* Grapple */ key.LeftAlt = (xinput.LeftShoulder || joystick.button5)
     // Complex
     /* Aim Mode */ var.inAimToggle = (key.Equals || xinput.RightThumb || joystick.button12)
     /* Auto Tunneling Mode */ var.inAutoTunnel = (key.Backslash || xinput.X || joystick.button1)
